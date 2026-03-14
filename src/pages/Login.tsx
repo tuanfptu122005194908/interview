@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
+import { CriteriaTable } from "@/components/CriteriaTable";
 
 const ACCOUNTS = [
   { label: "HR 1", email: "interviewer1@interview.os", password: "interview123", color: "bg-pink-400", icon: "👔" },
@@ -60,7 +61,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 px-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 relative overflow-y-auto">
       {/* Cherry blossoms falling animation */}
       <div className="fixed inset-0 pointer-events-none">
         <Cherry delay="0s" offset={10} />
@@ -83,23 +84,26 @@ const Login = () => {
       </div>
 
       {/* Light decorative background elements */}
-      <div className="absolute top-0 left-0 w-60 h-60 bg-pink-200/20 rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
-      <div className="absolute -bottom-8 right-0 w-60 h-60 bg-rose-200/20 rounded-full mix-blend-multiply filter blur-3xl opacity-40" style={{ animationDelay: "2s" }}></div>
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-60 h-60 bg-pink-200/20 rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
+        <div className="absolute -bottom-8 right-0 w-60 h-60 bg-rose-200/20 rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
+      </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo Section */}
-        <div className="text-center mb-12 animate-fade-in-scale">
-          <div className="inline-flex items-center justify-center mb-6">
-            <div className="relative w-20 h-20">
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-2xl blur-lg opacity-50 animate-pulse"></div>
-              <div className="relative w-20 h-20 bg-gradient-to-br from-pink-300 to-rose-400 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-2xl border border-pink-300/40">
-                ✿
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          {/* Logo Section */}
+          <div className="text-center mb-12 animate-fade-in-scale">
+            <div className="inline-flex items-center justify-center mb-6">
+              <div className="relative w-20 h-20">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-2xl blur-lg opacity-50 animate-pulse"></div>
+                <div className="relative w-20 h-20 bg-gradient-to-br from-pink-300 to-rose-400 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-2xl border border-pink-300/40">
+                  ✿
+                </div>
               </div>
             </div>
+            <h1 className="text-4xl font-black text-rose-700 mb-2 tracking-tight">InterviewOS</h1>
+            <p className="text-sm text-rose-600/70">Hệ thống đánh giá phỏng vấn chuyên nghiệp</p>
           </div>
-          <h1 className="text-4xl font-black text-rose-700 mb-2 tracking-tight">InterviewOS</h1>
-          <p className="text-sm text-rose-600/70">Hệ thống đánh giá phỏng vấn chuyên nghiệp</p>
-        </div>
 
         {/* Quick Login Section */}
         <div className="mb-8 animate-slide-in-up" style={{ animationDelay: "0.2s" }}>
@@ -195,6 +199,14 @@ const Login = () => {
         <p className="text-center text-xs text-rose-600/60 mt-8 animate-slide-in-up" style={{ animationDelay: "0.6s" }}>
           Dùng tài khoản demo để trải nghiệm
         </p>
+        </div>
+      </div>
+
+      {/* Criteria Table Section */}
+      <div className="relative z-10 w-full px-6 py-16 bg-gradient-to-t from-white/80 via-white/40 to-transparent">
+        <div className="flex justify-center max-w-7xl mx-auto">
+          <CriteriaTable />
+        </div>
       </div>
     </div>
   );

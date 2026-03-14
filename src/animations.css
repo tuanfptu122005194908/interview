@@ -225,23 +225,23 @@
 
 /* Gradient backgrounds */
 .bg-gradient-premium {
-  background: linear-gradient(135deg, #FFB6D9 0%, #FFE4E1 100%);
+  background: linear-gradient(135deg, #ffb6d9 0%, #ffe4e1 100%);
 }
 
 .bg-gradient-vibrant {
-  background: linear-gradient(135deg, #FF69B4 0%, #FFB6D9 100%);
+  background: linear-gradient(135deg, #ff69b4 0%, #ffb6d9 100%);
 }
 
 .bg-gradient-cool {
-  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+  background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%);
 }
 
 .bg-gradient-warm {
-  background: linear-gradient(135deg, #FF69B4 0%, #FFB6D9 100%);
+  background: linear-gradient(135deg, #ff69b4 0%, #ffb6d9 100%);
 }
 
 .bg-gradient-sakura {
-  background: linear-gradient(135deg, #FFC0CB 0%, #FFE4E1 50%, #FFFBFC 100%);
+  background: linear-gradient(135deg, #ffc0cb 0%, #ffe4e1 50%, #fffbfc 100%);
 }
 
 /* Smooth scroll */

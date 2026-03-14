@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { generateInterviewQuestions, extractCVText } from "@/services/aiService";
+import { EvaluationScoringPanel } from "@/components/EvaluationScoringPanel";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -69,6 +71,18 @@ const CandidateDetail = () => {
     enabled: !!id,
   });
 
+  const { data: allScores = [] } = useQuery({
+    queryKey: ["all-scores", id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("interview_scores")
+        .select("*")
+        .eq("candidate_id", id!);
+      return data || [];
+    },
+    enabled: !!id,
+  });
+
   // Realtime
   useEffect(() => {
     if (!id) return;
@@ -84,27 +98,21 @@ const CandidateDetail = () => {
         queryClient.invalidateQueries({ queryKey: ["cv-images", id] });
       })
       .subscribe();
+    const ch3 = supabase
+      .channel(`scores-${id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "interview_scores", filter: `candidate_id=eq.${id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ["all-scores", id] });
+      })
+      .subscribe();
     return () => {
       supabase.removeChannel(ch1);
       supabase.removeChannel(ch2);
+      supabase.removeChannel(ch3);
     };
   }, [id, queryClient]);
 
   const myQuestions = allQuestions.filter((q) => q.interviewer_role === role);
   const [newQuestionsText, setNewQuestionsText] = useState("");
-  const [localScores, setLocalScores] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    const scores: Record<string, number> = {};
-    myQuestions.forEach((q) => {
-      if (!(q.id in localScores)) {
-        scores[q.id] = Number(q.score) || 0;
-      }
-    });
-    if (Object.keys(scores).length > 0) {
-      setLocalScores((prev) => ({ ...scores, ...prev }));
-    }
-  }, [myQuestions, localScores]);
 
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -157,39 +165,79 @@ const CandidateDetail = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (newQuestions) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["questions", id] });
-      // Immediately add new questions to local scores with default score 0
-      if (newQuestions) {
-        const newScores: Record<string, number> = {};
-        newQuestions.forEach((q: any) => {
-          newScores[q.id] = 0;
-        });
-        setLocalScores((prev) => ({ ...prev, ...newScores }));
-      }
       setNewQuestionsText("");
       toast.success("Đã thêm câu hỏi");
     },
     onError: (err: Error) => toast.error("Lỗi: " + err.message),
   });
 
-  const saveScoreMutation = useMutation({
-    mutationFn: async ({ questionId, score }: { questionId: string; score: number }) => {
-      const { error } = await supabase.from("interview_questions").update({ score: Math.min(10, Math.max(0, score)) }).eq("id", questionId);
-      if (error) throw error;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["questions", id] }),
-    onError: (err: Error) => toast.error("Lỗi: " + err.message),
-  });
+  const generateQuestionsMutation = useMutation({
+    mutationFn: async () => {
+      if (!user || !id || !candidate) return;
+      
+      // Extract CV text from images (with OCR)
+      const cvText = await extractCVText(cvImages);
+      
+      // Call AI to generate questions
+      const generatedQuestions = await generateInterviewQuestions(
+        candidate.name,
+        candidate.role || "Ứng viên",
+        cvText
+      );
 
-  const deleteQuestionMutation = useMutation({
-    mutationFn: async (questionId: string) => {
-      const { error } = await supabase.from("interview_questions").delete().eq("id", questionId);
+      // Prepare questions for all 3 HR roles
+      const inserts: any[] = [];
+      
+      // HR 1 questions (Personal info, education, career goals)
+      generatedQuestions.hr1.forEach((content) => {
+        inserts.push({
+          candidate_id: id,
+          interviewer_role: "interviewer_1" as AppRole,
+          user_id: user.id,
+          content,
+          score: 0,
+        });
+      });
+
+      // HR 2 questions (Technical/professional knowledge)
+      generatedQuestions.hr2.forEach((content) => {
+        inserts.push({
+          candidate_id: id,
+          interviewer_role: "interviewer_2" as AppRole,
+          user_id: user.id,
+          content,
+          score: 0,
+        });
+      });
+
+      // HR 3 questions (Soft skills, attitude, situations)
+      generatedQuestions.hr3.forEach((content) => {
+        inserts.push({
+          candidate_id: id,
+          interviewer_role: "interviewer_3" as AppRole,
+          user_id: user.id,
+          content,
+          score: 0,
+        });
+      });
+
+      const { data, error } = await supabase
+        .from("interview_questions")
+        .insert(inserts)
+        .select();
+
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["questions", id] });
-      toast.success("Đã xóa câu hỏi");
+      toast.success("✨ AI tạo 15 câu hỏi cho 3 HR thành công (5 câu mỗi người)");
+    },
+    onError: (err: Error) => {
+      console.error("Generate questions error:", err);
+      toast.error("Lỗi tạo câu hỏi: " + err.message);
     },
   });
 
@@ -219,7 +267,14 @@ const CandidateDetail = () => {
   };
 
   const interviewerRoles = ["interviewer_1", "interviewer_2", "interviewer_3"] as const;
-  const overallScores = interviewerRoles.map((r) => getAverage(allQuestions.filter((q) => q.interviewer_role === r))).filter((a) => a > 0);
+  
+  // Get scores from interview_scores table instead of questions
+  const getRoleScore = (role: string) => {
+    const score = allScores.find((s) => s.interviewer_role === role);
+    return score ? Number(score.score) : 0;
+  };
+
+  const overallScores = interviewerRoles.map((r) => getRoleScore(r)).filter((a) => a > 0);
   const overallAverage = overallScores.length > 0 ? overallScores.reduce((a, b) => a + b, 0) / overallScores.length : 0;
 
   const isPdf = (url: string) => url.toLowerCase().includes(".pdf");
@@ -236,15 +291,14 @@ const CandidateDetail = () => {
     );
   }
 
-  const QuestionBlock = ({ r, qs, editable = false }: { r: string; qs: typeof allQuestions; editable?: boolean }) => {
-    const avg = getAverage(qs);
-    if (qs.length === 0 && !editable) return null;
+  const QuestionBlock = ({ r, qs }: { r: string; qs: typeof allQuestions }) => {
+    if (qs.length === 0) return null;
     return (
       <div className="rounded-2xl bg-card shadow-card border border-border/40 overflow-hidden">
         <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border/40 bg-muted/20">
           <div className={`w-2.5 h-2.5 rounded-full ${ROLE_DOT_COLORS[r] || "bg-foreground"}`} />
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
-            {editable ? "Câu hỏi của bạn" : ROLE_LABELS[r] || r}
+            {ROLE_LABELS[r] || r}
           </h3>
           {qs.length > 0 && (
             <span className="ml-auto text-[11px] text-muted-foreground font-medium">{qs.length} câu</span>
@@ -254,48 +308,11 @@ const CandidateDetail = () => {
         {qs.length > 0 && (
           <div className="divide-y divide-border/30">
             {qs.map((q, idx) => (
-              <div key={q.id} className="flex items-center gap-3 px-5 py-3.5 group hover:bg-muted/10 transition-colors">
+              <div key={q.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/10 transition-colors">
                 <span className="text-[11px] text-muted-foreground/50 w-5 shrink-0 tabular-nums font-medium">{idx + 1}</span>
                 <p className="text-sm text-foreground flex-1 leading-relaxed">{q.content}</p>
-                {editable ? (
-                  <>
-                    <input
-                      type="number"
-                      min={0}
-                      max={10}
-                      step={0.5}
-                      value={localScores[q.id] ?? 0}
-                      onChange={(e) => {
-                        const val = Math.min(10, Math.max(0, parseFloat(e.target.value) || 0));
-                        setLocalScores((prev) => ({ ...prev, [q.id]: val }));
-                        saveScoreMutation.mutate({ questionId: q.id, score: val });
-                      }}
-                      className="w-14 rounded-lg border border-input bg-background px-2 py-1.5 text-sm tabular-nums text-center text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25 transition-all"
-                      placeholder="0"
-                    />
-                    <button
-                      onClick={() => deleteQuestionMutation.mutate(q.id)}
-                      className="text-muted-foreground/30 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                    </button>
-                  </>
-                ) : (
-                  <span className={`text-sm font-bold tabular-nums w-10 text-right ${Number(q.score) > 0 ? scoreColor(Number(q.score)) : "text-muted-foreground/30"}`}>
-                    {Number(q.score) > 0 ? Number(q.score).toFixed(1) : "—"}
-                  </span>
-                )}
               </div>
             ))}
-          </div>
-        )}
-
-        {qs.length > 0 && (
-          <div className="px-5 py-3 border-t border-border/40 bg-muted/15 flex justify-between items-center">
-            <span className="text-xs font-semibold text-muted-foreground">Trung bình</span>
-            <span className={`text-lg font-extrabold tabular-nums ${scoreColor(avg)}`}>
-              {avg > 0 ? avg.toFixed(1) : "—"}
-            </span>
           </div>
         )}
       </div>
@@ -495,6 +512,44 @@ const CandidateDetail = () => {
               ) : null}
             </div>
 
+            {/* Generate AI Questions (interviewer) */}
+            {isInterviewer && (
+              <div className="rounded-2xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 shadow-card border border-purple-400/30 p-5">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div>
+                    <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-1">✨ Tạo câu hỏi bằng AI</h3>
+                    <p className="text-[11px] text-muted-foreground">AI sẽ tạo 15 câu hỏi (5 câu/người) tối ưu cho 3 HR dựa trên CV</p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => generateQuestionsMutation.mutate()}
+                  disabled={generateQuestionsMutation.isPending || cvImages.length === 0}
+                  className={`w-full py-3 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+                    generateQuestionsMutation.isPending || cvImages.length === 0
+                      ? "bg-gradient-to-r from-purple-400/30 to-blue-400/30 text-foreground/50 cursor-not-allowed"
+                      : "bg-gradient-to-r from-purple-400 to-blue-400 text-white hover:shadow-lg hover:from-purple-500 hover:to-blue-500"
+                  }`}
+                >
+                  {generateQuestionsMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Đang tạo câu hỏi...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                      Tạo câu hỏi AI
+                    </>
+                  )}
+                </button>
+                
+                {cvImages.length === 0 && (
+                  <p className="text-[10px] text-muted-foreground/60 mt-2 text-center">⚠️ Cần upload CV trước khi tạo câu hỏi</p>
+                )}
+              </div>
+            )}
+
             {/* Add questions (interviewer) */}
             {isInterviewer && (
               <div className="rounded-2xl bg-card shadow-card border border-border/40 p-5">
@@ -517,8 +572,11 @@ const CandidateDetail = () => {
               </div>
             )}
 
-            {/* My questions with scoring */}
-            {isInterviewer && <QuestionBlock r={role!} qs={myQuestions} editable />}
+            {/* My questions */}
+            {isInterviewer && <QuestionBlock r={role!} qs={myQuestions} />}
+
+            {/* Evaluation Scoring Panel */}
+            {isInterviewer && <EvaluationScoringPanel candidateId={id!} candidateName={candidate.name} role={role} isInterviewer={isInterviewer} />}
 
             {/* Other interviewers' questions */}
             {isInterviewer && interviewerRoles
@@ -539,7 +597,7 @@ const CandidateDetail = () => {
               <div className="space-y-4">
                 {interviewerRoles.map((r) => {
                   const qs = allQuestions.filter((q) => q.interviewer_role === r);
-                  const avg = getAverage(qs);
+                  const score = getRoleScore(r);
                   return (
                     <div key={r} className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
@@ -548,8 +606,8 @@ const CandidateDetail = () => {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-[10px] text-muted-foreground/50 font-medium">{qs.length} câu</span>
-                        <span className={`text-sm font-bold tabular-nums min-w-[2rem] text-right ${avg > 0 ? scoreColor(avg) : "text-muted-foreground/30"}`}>
-                          {avg > 0 ? avg.toFixed(1) : "—"}
+                        <span className={`text-sm font-bold tabular-nums min-w-[2rem] text-right ${score > 0 ? scoreColor(score) : "text-muted-foreground/30"}`}>
+                          {score > 0 ? score.toFixed(1) : "—"}
                         </span>
                       </div>
                     </div>

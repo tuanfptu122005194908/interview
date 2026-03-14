@@ -22,19 +22,19 @@ const Results = () => {
     },
   });
 
-  const { data: allQuestions = [] } = useQuery({
-    queryKey: ["all-questions-results"],
+  const { data: allScores = [] } = useQuery({
+    queryKey: ["all-scores-results"],
     queryFn: async () => {
-      const { data } = await supabase.from("interview_questions").select("*");
+      const { data } = await supabase.from("interview_scores").select("*");
       return data || [];
     },
   });
 
   useEffect(() => {
     const channel = supabase
-      .channel("results-q")
-      .on("postgres_changes", { event: "*", schema: "public", table: "interview_questions" }, () => {
-        queryClient.invalidateQueries({ queryKey: ["all-questions-results"] });
+      .channel("results-scores")
+      .on("postgres_changes", { event: "*", schema: "public", table: "interview_scores" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["all-scores-results"] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -42,18 +42,17 @@ const Results = () => {
 
   if (role !== "viewer") return <Navigate to="/" replace />;
 
-  const getAvgForRole = (candidateId: string, r: string) => {
-    const qs = allQuestions.filter((q) => q.candidate_id === candidateId && q.interviewer_role === r && Number(q.score) > 0);
-    if (qs.length === 0) return 0;
-    return qs.reduce((sum, q) => sum + Number(q.score), 0) / qs.length;
+  const getScoreForRole = (candidateId: string, r: string) => {
+    const score = allScores.find((s) => s.candidate_id === candidateId && s.interviewer_role === r);
+    return score ? Number(score.score) : 0;
   };
 
   const getAverage = (candidateId: string) => {
-    const avgs = ["interviewer_1", "interviewer_2", "interviewer_3"]
-      .map((r) => getAvgForRole(candidateId, r))
-      .filter((a) => a > 0);
-    if (avgs.length === 0) return 0;
-    return avgs.reduce((a, b) => a + b, 0) / avgs.length;
+    const scores = ["interviewer_1", "interviewer_2", "interviewer_3"]
+      .map((r) => getScoreForRole(candidateId, r))
+      .filter((s) => s > 0);
+    if (scores.length === 0) return 0;
+    return scores.reduce((a, b) => a + b, 0) / scores.length;
   };
 
   const sorted = [...candidates].sort((a, b) => getAverage(b.id) - getAverage(a.id));
@@ -102,7 +101,7 @@ const Results = () => {
                     </td>
                     <td className="px-5 py-3.5 text-xs text-muted-foreground">{c.role}</td>
                     {["interviewer_1", "interviewer_2", "interviewer_3"].map((r) => {
-                      const v = getAvgForRole(c.id, r);
+                      const v = getScoreForRole(c.id, r);
                       return (
                         <td key={r} className={`px-5 py-3.5 text-sm text-center tabular-nums font-bold ${v > 0 ? scoreColor(v) : "text-muted-foreground/25"}`}>
                           {v > 0 ? v.toFixed(1) : "—"}
