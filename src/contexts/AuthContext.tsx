@@ -26,12 +26,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         console.warn("Error fetching role:", error);
         setRole(null);
+        localStorage.removeItem("cached_role");
       } else {
         setRole(data as AppRole | null);
+        localStorage.setItem("cached_role", data || "null");
       }
     } catch (err) {
       console.warn("Error in fetchRole:", err);
       setRole(null);
+      localStorage.removeItem("cached_role");
     }
   };
 
@@ -50,15 +53,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (session?.user) {
           setUser(session.user);
-          await fetchRole(session.user.id);
+          // Load cached role immediately for fast render
+          const cachedRole = localStorage.getItem("cached_role");
+          if (cachedRole && cachedRole !== "null") {
+            setRole(cachedRole as AppRole);
+          }
+          // Fetch fresh role in background (non-blocking)
+          fetchRole(session.user.id);
         } else {
           setUser(null);
           setRole(null);
+          localStorage.removeItem("cached_role");
         }
       } catch (err) {
         console.warn("Error initializing auth:", err);
         setUser(null);
         setRole(null);
+        localStorage.removeItem("cached_role");
       } finally {
         if (isActive) {
           setLoading(false);
@@ -66,13 +77,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Set a timeout to prevent infinite loading
+    // Set a timeout to prevent infinite loading (reduced to 2 seconds)
     const timeoutId = setTimeout(() => {
       if (isActive && loading) {
         console.warn("Auth initialization timeout, setting loading to false");
         setLoading(false);
       }
-    }, 5000);
+    }, 2000);
 
     // Initialize auth
     initializeAuth();
@@ -83,9 +94,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       setUser(session?.user ?? null);
       if (session?.user) {
-        await fetchRole(session.user.id);
+        // Load cached role immediately
+        const cachedRole = localStorage.getItem("cached_role");
+        if (cachedRole && cachedRole !== "null") {
+          setRole(cachedRole as AppRole);
+        }
+        // Fetch fresh role in background
+        fetchRole(session.user.id);
       } else {
         setRole(null);
+        localStorage.removeItem("cached_role");
       }
       setLoading(false);
     });
