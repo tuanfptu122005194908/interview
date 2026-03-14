@@ -168,26 +168,26 @@ const CandidateList = () => {
   const canManage = role === "viewer" || role?.startsWith("interviewer");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-500/5 rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full mix-blend-multiply filter blur-2xl opacity-20" style={{ animationDelay: "2s" }}></div>
+        <div className="absolute top-0 left-1/4 w-80 h-80 bg-pink-200/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-rose-200/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30" style={{ animationDelay: "2s" }}></div>
       </div>
 
       {/* Header */}
-      <header className="z-20 bg-gradient-to-b from-slate-800/95 to-slate-800/70 backdrop-blur-sm border-b border-slate-700/50 sticky top-0">
+      <header className="z-20 bg-gradient-to-b from-white/90 to-pink-50/70 backdrop-blur-sm border-b border-pink-200/50 sticky top-0">
         <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4 group">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-all duration-300"></div>
-              <div className="relative w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-lg font-black">
-                IV
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-all duration-300"></div>
+              <div className="relative w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-400 rounded-xl flex items-center justify-center text-white text-lg font-black">
+                ✿
               </div>
             </div>
             <div>
-              <h1 className="text-xl font-black text-white tracking-tight">InterviewOS</h1>
-              <p className="text-xs text-slate-400 font-medium">{role ? ROLE_LABELS[role] : "Loading..."}</p>
+              <h1 className="text-xl font-black text-rose-700 tracking-tight">InterviewOS</h1>
+              <p className="text-xs text-rose-600/60 font-medium">{role ? ROLE_LABELS[role] : "Loading..."}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -196,15 +196,15 @@ const CandidateList = () => {
                 onClick={() => window.location.href = "/results"}
                 className="relative group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg opacity-75 group-hover:opacity-100 transition-all duration-300 blur-lg group-hover:blur-xl"></div>
-                <div className="relative px-5 py-2.5 rounded-lg bg-gradient-to-r from-green-500 to-blue-600 text-white text-xs font-bold uppercase tracking-wider transition-all hover:scale-105 active:scale-95">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-lg opacity-75 group-hover:opacity-100 transition-all duration-300 blur-lg group-hover:blur-xl"></div>
+                <div className="relative px-5 py-2.5 rounded-lg bg-gradient-to-r from-pink-400 to-rose-400 text-white text-xs font-bold uppercase tracking-wider transition-all hover:scale-105 active:scale-95">
                   📊 Kết quả
                 </div>
               </button>
             )}
             <button
               onClick={signOut}
-              className="px-4 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-300 text-xs font-semibold border border-slate-700 hover:border-slate-600"
+              className="px-4 py-2.5 rounded-lg text-rose-700 hover:text-rose-900 hover:bg-pink-200/50 transition-all duration-300 text-xs font-semibold border border-pink-300 hover:border-pink-400"
             >
               Đăng xuất
             </button>
@@ -218,8 +218,8 @@ const CandidateList = () => {
           <div
             className={`mb-10 group rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer ${
               dragOver
-                ? "border-blue-400 bg-blue-500/10 scale-[1.02]"
-                : "border-slate-600 hover:border-blue-500/50 hover:bg-slate-700/30"
+                ? "border-pink-400 bg-pink-200/20 scale-[1.02]"
+                : "border-pink-300 hover:border-pink-400/50 hover:bg-pink-100/20"
             }`}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
@@ -230,25 +230,25 @@ const CandidateList = () => {
               {uploading ? (
                 <>
                   <div className="relative mb-4">
-                    <div className="w-12 h-12 border-4 border-blue-500/20 rounded-full animate-spin"></div>
-                    <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-blue-500 border-r-blue-500 rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
+                    <div className="w-12 h-12 border-4 border-pink-300/20 rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-pink-400 border-r-pink-400 rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
                   </div>
-                  <p className="text-sm font-bold text-white">Đang upload...</p>
+                  <p className="text-sm font-bold text-rose-700">Đang upload...</p>
                 </>
               ) : (
                 <>
                   <div className="relative mb-4">
-                    <div className="absolute inset-0 w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
-                    <div className="relative w-16 h-16 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl flex items-center justify-center">
-                      <svg className="text-blue-400" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <div className="absolute inset-0 w-16 h-16 bg-gradient-to-r from-pink-400 to-rose-400 rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition-all duration-300"></div>
+                    <div className="relative w-16 h-16 bg-gradient-to-br from-pink-100 to-rose-100 rounded-2xl flex items-center justify-center">
+                      <svg className="text-pink-400" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
                       </svg>
                     </div>
                   </div>
-                  <p className="text-base font-bold text-white group-hover:text-blue-400 transition-colors">
+                  <p className="text-base font-bold text-rose-700 group-hover:text-pink-600 transition-colors">
                     {dragOver ? "Thả file vào đây" : "Upload CV để tạo ứng viên"}
                   </p>
-                  <p className="text-sm text-slate-400 mt-2">
+                  <p className="text-sm text-rose-600/60 mt-2">
                     Kéo thả hoặc bấm — mỗi file = 1 ứng viên (ảnh & PDF)
                   </p>
                 </>
@@ -269,19 +269,19 @@ const CandidateList = () => {
         {/* Title row */}
         <div className="flex items-end justify-between mb-8 animate-slide-in-up">
           <div>
-            <h2 className="text-3xl font-black text-white mb-1 flex items-end gap-2">
+            <h2 className="text-3xl font-black text-rose-700 mb-1 flex items-end gap-2">
               👥 Ứng viên
-              <span className="text-lg font-semibold text-slate-400">({candidates.length})</span>
+              <span className="text-lg font-semibold text-rose-500/70">({candidates.length})</span>
             </h2>
-            <p className="text-sm text-slate-400">Quản lý hồ sơ và điểm phỏng vấn</p>
+            <p className="text-sm text-rose-600/60">Quản lý hồ sơ và điểm phỏng vấn</p>
           </div>
           {canManage && (
             <button
               onClick={openAddForm}
               className="group relative"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg opacity-75 group-hover:opacity-100 transition-all duration-300 blur-lg group-hover:blur-xl"></div>
-              <div className="relative px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-lg opacity-75 group-hover:opacity-100 transition-all duration-300 blur-lg group-hover:blur-xl"></div>
+              <div className="relative px-6 py-3 rounded-lg bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14"/></svg>
                 Thêm ứng viên
               </div>
@@ -302,21 +302,21 @@ const CandidateList = () => {
               >
                 <Link
                   to={`/candidate/${candidate.id}`}
-                  className="flex items-center justify-between px-6 py-5 rounded-xl bg-gradient-to-r from-slate-800 to-slate-700 border border-slate-700 group-hover:border-blue-500/50 transition-all duration-300 hover-lift hover:shadow-2xl"
+                  className="flex items-center justify-between px-6 py-5 rounded-xl bg-gradient-to-r from-white to-pink-50 border border-pink-200 group-hover:border-pink-400 transition-all duration-300 hover-lift hover:shadow-2xl"
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg opacity-0 group-hover:opacity-75 transition-all duration-300 blur-lg"></div>
-                      <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-lg font-bold text-white">
+                      <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-lg opacity-0 group-hover:opacity-75 transition-all duration-300 blur-lg"></div>
+                      <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center text-lg font-bold text-white">
                         {candidate.name.charAt(0).toUpperCase()}
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-base font-bold text-white group-hover:text-blue-400 transition-colors truncate">
+                      <p className="text-base font-bold text-rose-700 group-hover:text-pink-600 transition-colors truncate">
                         {candidate.name}
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {candidate.role} <span className="text-slate-600">•</span> {qCount} câu hỏi
+                      <p className="text-xs text-rose-600/60 mt-1">
+                        {candidate.role} <span className="text-rose-400">•</span> {qCount} câu hỏi
                       </p>
                     </div>
                   </div>
@@ -325,11 +325,11 @@ const CandidateList = () => {
                   <div className="flex items-center gap-6 ml-4">
                     <div className="text-right">
                       <div className={`text-2xl font-black tabular-nums transition-all ${
-                        avg > 0 ? scoreColor(avg) : "text-slate-500"
+                        avg > 0 ? scoreColor(avg) : "text-rose-400"
                       }`}>
                         {avg > 0 ? avg.toFixed(1) : "—"}
                       </div>
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider font-black">Điểm TB</p>
+                      <p className="text-[10px] text-rose-600/70 uppercase tracking-wider font-black">Điểm TB</p>
                     </div>
 
                     {/* Action buttons */}
@@ -337,14 +337,14 @@ const CandidateList = () => {
                       <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={(e) => { e.preventDefault(); openEditForm(candidate); }}
-                          className="p-2 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-slate-700/50 transition-all duration-200"
+                          className="p-2 rounded-lg text-rose-600 hover:text-pink-600 hover:bg-pink-200/50 transition-all duration-200"
                           title="Sửa"
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
                         <button
                           onClick={(e) => { e.preventDefault(); setDeletingId(candidate.id); }}
-                          className="p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700/50 transition-all duration-200"
+                          className="p-2 rounded-lg text-rose-600 hover:text-red-600 hover:bg-red-100 transition-all duration-200"
                           title="Xóa"
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
@@ -352,7 +352,7 @@ const CandidateList = () => {
                       </div>
                     )}
 
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-500 group-hover:text-blue-400 transition-colors">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-rose-400 group-hover:text-pink-600 transition-colors">
                       <path d="M9 18l6-6-6-6"/>
                     </svg>
                   </div>
@@ -362,15 +362,15 @@ const CandidateList = () => {
           })}
 
           {candidates.length === 0 && (
-            <div className="px-8 py-16 text-center rounded-2xl bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-700">
+            <div className="px-8 py-16 text-center rounded-2xl bg-gradient-to-br from-white to-pink-50 border border-pink-200">
               <div className="relative w-20 h-20 mx-auto mb-6">
-                <div className="absolute inset-0 bg-slate-600 rounded-2xl blur-lg opacity-50"></div>
-                <div className="relative w-20 h-20 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl flex items-center justify-center text-3xl">
+                <div className="absolute inset-0 bg-pink-200 rounded-2xl blur-lg opacity-50"></div>
+                <div className="relative w-20 h-20 bg-gradient-to-br from-pink-100 to-rose-100 rounded-2xl flex items-center justify-center text-3xl">
                   👥
                 </div>
               </div>
-              <p className="text-lg font-bold text-white">Chưa có ứng viên nào</p>
-              <p className="text-sm text-slate-400 mt-2">Upload CV hoặc thêm ứng viên thủ công để bắt đầu</p>
+              <p className="text-lg font-bold text-rose-700">Chưa có ứng viên nào</p>
+              <p className="text-sm text-rose-600/60 mt-2">Upload CV hoặc thêm ứng viên thủ công để bắt đầu</p>
             </div>
           )}
         </div>
@@ -378,30 +378,30 @@ const CandidateList = () => {
 
       {/* Add/Edit Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 animate-fade-in-scale" onClick={() => setShowForm(false)}>
-          <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-slate-600 animate-bounce-in" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-2xl font-black text-white mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm px-4 animate-fade-in-scale" onClick={() => setShowForm(false)}>
+          <div className="bg-gradient-to-br from-white to-pink-50 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-pink-200 animate-bounce-in" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-black text-rose-700 mb-6">
               {editingId ? "✏️ Chỉnh sửa ứng viên" : "➕ Thêm ứng viên mới"}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-black text-slate-400 uppercase tracking-wider block mb-2">Họ tên</label>
+                <label className="text-xs font-black text-rose-600 uppercase tracking-wider block mb-2">Họ tên</label>
                 <input
                   type="text"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 backdrop-blur-sm px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                  className="w-full rounded-lg border border-pink-200 bg-pink-50/50 backdrop-blur-sm px-4 py-3 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 transition-all"
                   placeholder="Nguyễn Văn A"
                   autoFocus
                 />
               </div>
               <div>
-                <label className="text-xs font-black text-slate-400 uppercase tracking-wider block mb-2">Vị trí ứng tuyển</label>
+                <label className="text-xs font-black text-rose-600 uppercase tracking-wider block mb-2">Vị trí ứng tuyển</label>
                 <input
                   type="text"
                   value={formRole}
                   onChange={(e) => setFormRole(e.target.value)}
-                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 backdrop-blur-sm px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                  className="w-full rounded-lg border border-pink-200 bg-pink-50/50 backdrop-blur-sm px-4 py-3 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 transition-all"
                   placeholder="Frontend Developer"
                 />
               </div>
@@ -409,7 +409,7 @@ const CandidateList = () => {
             <div className="flex justify-end gap-3 mt-7">
               <button
                 onClick={() => setShowForm(false)}
-                className="px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-700 transition-all border border-slate-600"
+                className="px-5 py-2.5 text-sm font-semibold text-rose-700 hover:text-rose-900 rounded-lg hover:bg-pink-200/50 transition-all border border-pink-300"
               >
                 Hủy
               </button>
@@ -418,8 +418,8 @@ const CandidateList = () => {
                 disabled={saving}
                 className="relative group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg opacity-75 group-hover:opacity-100 transition-all duration-300 blur-lg group-hover:blur-xl"></div>
-                <div className="relative px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-50">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-lg opacity-75 group-hover:opacity-100 transition-all duration-300 blur-lg group-hover:blur-xl"></div>
+                <div className="relative px-5 py-2.5 rounded-lg bg-gradient-to-r from-pink-400 to-rose-400 text-white text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-50">
                   {saving ? "Đang lưu..." : editingId ? "Cập nhật" : "Thêm"}
                 </div>
               </button>
@@ -430,17 +430,17 @@ const CandidateList = () => {
 
       {/* Delete Confirm Modal */}
       {deletingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 animate-fade-in-scale" onClick={() => setDeletingId(null)}>
-          <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl shadow-2xl p-8 w-full max-w-sm border border-slate-600 animate-bounce-in" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center justify-center mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm px-4 animate-fade-in-scale" onClick={() => setDeletingId(null)}>
+          <div className="bg-gradient-to-br from-white to-pink-50 rounded-2xl shadow-2xl p-8 w-full max-w-sm border border-pink-200 animate-bounce-in" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 bg-red-100 border border-red-300 rounded-xl flex items-center justify-center mb-5">
               <span className="text-2xl">⚠️</span>
             </div>
-            <h3 className="text-xl font-black text-white mb-2">Xóa ứng viên?</h3>
-            <p className="text-sm text-slate-400 mb-7">Tất cả dữ liệu liên quan (câu hỏi, điểm, CV) sẽ bị xóa vĩnh viễn.</p>
+            <h3 className="text-xl font-black text-rose-700 mb-2">Xóa ứng viên?</h3>
+            <p className="text-sm text-rose-600/60 mb-7">Tất cả dữ liệu liên quan (câu hỏi, điểm, CV) sẽ bị xóa vĩnh viễn.</p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setDeletingId(null)}
-                className="px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-700 transition-all border border-slate-600"
+                className="px-5 py-2.5 text-sm font-semibold text-rose-700 hover:text-rose-900 rounded-lg hover:bg-pink-200/50 transition-all border border-pink-300"
               >
                 Hủy
               </button>

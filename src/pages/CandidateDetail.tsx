@@ -227,10 +227,10 @@ const CandidateDetail = () => {
 
   if (!candidate) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 flex items-center justify-center">
         <div className="relative">
-          <div className="w-12 h-12 border-4 border-blue-500/20 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-blue-500 border-r-blue-500 rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
+          <div className="w-12 h-12 border-4 border-pink-300/20 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-pink-400 border-r-pink-400 rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
         </div>
       </div>
     );
@@ -303,44 +303,44 @@ const CandidateDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-500/5 rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full mix-blend-multiply filter blur-2xl opacity-20" style={{ animationDelay: "2s" }}></div>
+        <div className="absolute top-0 left-1/4 w-80 h-80 bg-pink-200/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-rose-200/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30" style={{ animationDelay: "2s" }}></div>
       </div>
 
       {/* Header */}
-      <header className="z-20 bg-gradient-to-b from-slate-800/95 to-slate-800/70 backdrop-blur-sm border-b border-slate-700/50 sticky top-0">
+      <header className="z-20 bg-gradient-to-b from-white/90 to-pink-50/70 backdrop-blur-sm border-b border-pink-200/50 sticky top-0">
         <div className="mx-auto max-w-7xl px-6 py-5 flex items-center gap-5">
-          <Link to="/" className="text-slate-400 hover:text-blue-400 hover:bg-slate-700/50 p-2 rounded-lg transition-all duration-200">
+          <Link to="/" className="text-rose-600 hover:text-pink-600 hover:bg-pink-200/50 p-2 rounded-lg transition-all duration-200">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
           </Link>
-          <div className="h-6 w-px bg-slate-700/50" />
+          <div className="h-6 w-px bg-pink-300/50" />
           <div className="flex-1 min-w-0">
             {editingCandidate ? (
               <div className="flex items-center gap-3">
                 <input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="text-lg font-black text-white bg-slate-700 rounded-lg px-3 py-1.5 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                  className="text-lg font-black text-rose-700 bg-pink-100 rounded-lg px-3 py-1.5 border border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 transition-all"
                   autoFocus
                 />
                 <input
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value)}
-                  className="text-xs text-slate-400 bg-slate-700 rounded-lg px-3 py-1.5 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                  className="text-xs text-rose-600 bg-pink-100 rounded-lg px-3 py-1.5 border border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400/50 focus:border-pink-400 transition-all"
                   placeholder="Vị trí"
                 />
                 <button 
                   onClick={handleUpdateCandidate} 
-                  className="text-xs font-black text-blue-400 hover:text-blue-300 transition-colors px-3 py-1.5 hover:bg-slate-700/50 rounded-lg"
+                  className="text-xs font-black text-pink-600 hover:text-pink-700 transition-colors px-3 py-1.5 hover:bg-pink-200/50 rounded-lg"
                 >
                   ✅ Lưu
                 </button>
                 <button 
                   onClick={() => setEditingCandidate(false)} 
-                  className="text-xs text-slate-400 hover:text-white transition-colors px-3 py-1.5 hover:bg-slate-700/50 rounded-lg"
+                  className="text-xs text-rose-600 hover:text-rose-700 transition-colors px-3 py-1.5 hover:bg-pink-200/50 rounded-lg"
                 >
                   ❌ Hủy
                 </button>
