@@ -306,12 +306,12 @@ const CandidateDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full mix-blend-multiply filter blur-3xl animate-float opacity-20"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full mix-blend-multiply filter blur-3xl animate-float opacity-20" style={{ animationDelay: "2s" }}></div>
+        <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-500/5 rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full mix-blend-multiply filter blur-2xl opacity-20" style={{ animationDelay: "2s" }}></div>
       </div>
 
       {/* Header */}
-      <header className="relative z-20 bg-gradient-to-b from-slate-800/95 to-slate-800/70 backdrop-blur-xl border-b border-slate-700/50 sticky top-0">
+      <header className="z-20 bg-gradient-to-b from-slate-800/95 to-slate-800/70 backdrop-blur-sm border-b border-slate-700/50 sticky top-0">
         <div className="mx-auto max-w-7xl px-6 py-5 flex items-center gap-5">
           <Link to="/" className="text-slate-400 hover:text-blue-400 hover:bg-slate-700/50 p-2 rounded-lg transition-all duration-200">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
