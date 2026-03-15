@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 import { generateInterviewQuestions, extractCVText } from "@/services/aiService";
 import { EvaluationScoringPanel } from "@/components/EvaluationScoringPanel";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -39,6 +40,7 @@ const CandidateDetail = () => {
   const [editingCandidate, setEditingCandidate] = useState(false);
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<{ questionId: string } | null>(null);
 
   const { data: candidate } = useQuery({
     queryKey: ["candidate", id],
@@ -111,7 +113,7 @@ const CandidateDetail = () => {
     };
   }, [id, queryClient]);
 
-  const myQuestions = allQuestions.filter((q) => q.interviewer_role === role);
+  const myQuestions = allQuestions.filter((q) => q.interviewer_role === role && q.user_id === user?.id);
   const [newQuestionsText, setNewQuestionsText] = useState("");
 
   const [uploading, setUploading] = useState(false);
@@ -243,15 +245,32 @@ const CandidateDetail = () => {
 
   const deleteQuestionMutation = useMutation({
     mutationFn: async (questionId: string) => {
+      // Find the question to verify ownership
+      const question = allQuestions.find(q => q.id === questionId);
+      if (!question) throw new Error("Câu hỏi không tồn tại");
+      
+      // Only allow deletion if user owns the question
+      if (question.user_id !== user?.id) {
+        throw new Error("Bạn không có quyền xóa câu hỏi này");
+      }
+      
+      // Only allow deletion if it's the user's role
+      if (question.interviewer_role !== role) {
+        throw new Error("Bạn chỉ có thể xóa câu hỏi của mình");
+      }
+      
       const { error } = await supabase.from("interview_questions").delete().eq("id", questionId);
       if (error) throw error;
       return questionId;
     },
     onSuccess: () => {
+      setDeleteConfirm(null);
       queryClient.invalidateQueries({ queryKey: ["questions", id] });
       toast.success("Đã xóa câu hỏi");
     },
-    onError: (err: Error) => toast.error("Lỗi xóa: " + err.message),
+    onError: (err: Error) => {
+      toast.error("Lỗi xóa: " + err.message);
+    },
   });
 
   const handleDeleteImage = async (imageId: string, imageUrl: string) => {
@@ -320,16 +339,17 @@ const CandidateDetail = () => {
 
         {qs.length > 0 && (
           <div className="divide-y divide-border/30">
-            {qs.map((q, idx) => (
+            {qs.map((q, idx) => {
+              // Only show delete for questions user owns
+              const userOwnsQuestion = canDelete && q.user_id === user?.id;
+              return (
               <div key={q.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/10 transition-colors group">
                 <span className="text-[11px] text-muted-foreground/50 w-5 shrink-0 tabular-nums font-medium">{idx + 1}</span>
                 <p className="text-sm text-foreground flex-1 leading-relaxed">{q.content}</p>
-                {canDelete && onDelete && (
+                {userOwnsQuestion && onDelete && (
                   <button
                     onClick={() => {
-                      if (confirm("Bạn chắc chắn muốn xóa câu hỏi này?")) {
-                        onDelete(q.id);
-                      }
+                      setDeleteConfirm({ questionId: q.id });
                     }}
                     className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-destructive/10 rounded-lg"
                     title="Xóa câu hỏi"
@@ -340,7 +360,8 @@ const CandidateDetail = () => {
                   </button>
                 )}
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>
@@ -654,6 +675,31 @@ const CandidateDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Xóa câu hỏi</AlertDialogTitle>
+              <AlertDialogDescription>
+                Bạn chắc chắn muốn xóa câu hỏi này? Hành động này không thể hoàn tác.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="flex gap-3 justify-end">
+              <AlertDialogCancel>Hủy</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (deleteConfirm?.questionId) {
+                    deleteQuestionMutation.mutate(deleteConfirm.questionId);
+                  }
+                }}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {deleteQuestionMutation.isPending ? "Đang xóa..." : "Xóa"}
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
     </div>
   );
