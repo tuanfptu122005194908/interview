@@ -114,25 +114,17 @@ const CandidateDetail = () => {
   }, [id, queryClient]);
 
   const myQuestions = useMemo(() => {
-    if (!user?.id || !role) return [];
-    const filtered = allQuestions.filter((q) => q.interviewer_role === role && q.user_id === user.id);
-    console.log("🔑 My questions:", { userId: user.id, role, count: filtered.length, questions: filtered.map(q => ({ id: q.id, content: q.content.substring(0, 40) })) });
+    if (!role) return [];
+    const filtered = allQuestions.filter((q) => q.interviewer_role === role);
+    console.log("📋 Questions for role:", { role, count: filtered.length });
     return filtered;
-  }, [allQuestions, user?.id, role]);
+  }, [allQuestions, role]);
 
-  // Debug: Show question analysis on load
+  // Debug: Show question analysis
   useEffect(() => {
     console.group("📊 Question Debug Info");
-    console.log("👤 Current User:", { id: user?.id, email: user?.email });
     console.log("🎯 Current Role:", role);
     console.log("📋 Total Questions:", allQuestions.length);
-    console.log("📋 All Questions Details:", allQuestions.map(q => ({
-      id: q.id,
-      role: q.interviewer_role,
-      user_id: q.user_id,
-      content: q.content.substring(0, 40),
-      created_at: q.created_at
-    })));
     
     const byRole = {
       hr1: allQuestions.filter(q => q.interviewer_role === 'interviewer_1').length,
@@ -141,13 +133,12 @@ const CandidateDetail = () => {
     };
     console.log("📊 Questions by Role:", byRole);
     
-    if (user?.id && role) {
-      const myCount = allQuestions.filter(q => q.interviewer_role === role && q.user_id === user.id).length;
-      const roleTotal = allQuestions.filter(q => q.interviewer_role === role).length;
-      console.log(`✅ My ${role} questions:`, { mine: myCount, roleTotal });
+    if (role) {
+      const roleQuestions = allQuestions.filter(q => q.interviewer_role === role);
+      console.log(`✅ ${role} questions count:`, roleQuestions.length);
     }
     console.groupEnd();
-  }, [user?.id, role, allQuestions]);
+  }, [role, allQuestions]);
   
   const [newQuestionsText, setNewQuestionsText] = useState("");
 
@@ -280,20 +271,11 @@ const CandidateDetail = () => {
 
   const deleteQuestionMutation = useMutation({
     mutationFn: async (questionId: string) => {
-      // Find the question to verify ownership
+      // Verify question exists
       const question = allQuestions.find(q => q.id === questionId);
       if (!question) throw new Error("Câu hỏi không tồn tại");
       
-      // Only allow deletion if user owns the question
-      if (question.user_id !== user?.id) {
-        throw new Error("Bạn không có quyền xóa câu hỏi này");
-      }
-      
-      // Only allow deletion if it's the user's role
-      if (question.interviewer_role !== role) {
-        throw new Error("Bạn chỉ có thể xóa câu hỏi của mình");
-      }
-      
+      // Allow any interviewer to delete any question
       const { error } = await supabase.from("interview_questions").delete().eq("id", questionId);
       if (error) throw error;
       return questionId;
@@ -394,14 +376,11 @@ const CandidateDetail = () => {
 
         {qs.length > 0 && (
           <div className="divide-y divide-border/30">
-            {qs.map((q, idx) => {
-              // Only show delete for questions user owns
-              const userOwnsQuestion = canDelete && q.user_id === user?.id;
-              return (
+            {qs.map((q, idx) => (
               <div key={q.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/10 transition-colors group">
                 <span className="text-[11px] text-muted-foreground/50 w-5 shrink-0 tabular-nums font-medium">{idx + 1}</span>
                 <p className="text-sm text-foreground flex-1 leading-relaxed">{q.content}</p>
-                {userOwnsQuestion && onDelete && (
+                {canDelete && onDelete && (
                   <button
                     onClick={() => {
                       setDeleteConfirm({ questionId: q.id });
@@ -415,8 +394,7 @@ const CandidateDetail = () => {
                   </button>
                 )}
               </div>
-            );
-            })}
+            ))}
           </div>
         )}
       </div>
@@ -676,13 +654,13 @@ const CandidateDetail = () => {
               </div>
             )}
 
-            {/* My questions */}
+            {/* Questions for my role */}
             {isInterviewer && (
               <>
                 <QuestionBlock r={role!} qs={myQuestions} canDelete={true} onDelete={(id) => deleteQuestionMutation.mutate(id)} />
                 {myQuestions.length > 0 && (
                   <div className="text-xs text-muted-foreground/60 text-center mt-2">
-                    💡 Bạn có thể xóa các câu hỏi bạn tạo. Để xóa câu của HR khác, liên hệ họ.
+                    💡 Bạn có thể xóa bất kỳ câu hỏi nào trong phần của bạn.
                   </div>
                 )}
               </>
@@ -694,7 +672,7 @@ const CandidateDetail = () => {
             {/* Other interviewers' questions */}
             {isInterviewer && interviewerRoles
               .filter((r) => r !== role)
-              .map((r) => <QuestionBlock key={r} r={r} qs={allQuestions.filter((q) => q.interviewer_role === r)} />)}
+              .map((r) => <QuestionBlock key={r} r={r} qs={allQuestions.filter((q) => q.interviewer_role === r)} canDelete={true} onDelete={(id) => deleteQuestionMutation.mutate(id)} />)}
 
             {/* Viewer sees all */}
             {isViewer && interviewerRoles.map((r) => (
