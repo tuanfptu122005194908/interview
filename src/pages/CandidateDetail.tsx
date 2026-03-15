@@ -241,6 +241,19 @@ const CandidateDetail = () => {
     },
   });
 
+  const deleteQuestionMutation = useMutation({
+    mutationFn: async (questionId: string) => {
+      const { error } = await supabase.from("interview_questions").delete().eq("id", questionId);
+      if (error) throw error;
+      return questionId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questions", id] });
+      toast.success("Đã xóa câu hỏi");
+    },
+    onError: (err: Error) => toast.error("Lỗi xóa: " + err.message),
+  });
+
   const handleDeleteImage = async (imageId: string, imageUrl: string) => {
     const pathMatch = imageUrl.match(/cv-images\/(.+)$/);
     if (pathMatch) await supabase.storage.from("cv-images").remove([pathMatch[1]]);
@@ -291,7 +304,7 @@ const CandidateDetail = () => {
     );
   }
 
-  const QuestionBlock = ({ r, qs }: { r: string; qs: typeof allQuestions }) => {
+  const QuestionBlock = ({ r, qs, canDelete = false, onDelete }: { r: string; qs: typeof allQuestions; canDelete?: boolean; onDelete?: (id: string) => void }) => {
     if (qs.length === 0) return null;
     return (
       <div className="rounded-2xl bg-card shadow-card border border-border/40 overflow-hidden">
@@ -308,9 +321,24 @@ const CandidateDetail = () => {
         {qs.length > 0 && (
           <div className="divide-y divide-border/30">
             {qs.map((q, idx) => (
-              <div key={q.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/10 transition-colors">
+              <div key={q.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/10 transition-colors group">
                 <span className="text-[11px] text-muted-foreground/50 w-5 shrink-0 tabular-nums font-medium">{idx + 1}</span>
                 <p className="text-sm text-foreground flex-1 leading-relaxed">{q.content}</p>
+                {canDelete && onDelete && (
+                  <button
+                    onClick={() => {
+                      if (confirm("Bạn chắc chắn muốn xóa câu hỏi này?")) {
+                        onDelete(q.id);
+                      }
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-destructive/10 rounded-lg"
+                    title="Xóa câu hỏi"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-destructive">
+                      <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6h16zM10 11v6M14 11v6"/>
+                    </svg>
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -573,7 +601,7 @@ const CandidateDetail = () => {
             )}
 
             {/* My questions */}
-            {isInterviewer && <QuestionBlock r={role!} qs={myQuestions} />}
+            {isInterviewer && <QuestionBlock r={role!} qs={myQuestions} canDelete={true} onDelete={(id) => deleteQuestionMutation.mutate(id)} />}
 
             {/* Evaluation Scoring Panel */}
             {isInterviewer && <EvaluationScoringPanel candidateId={id!} candidateName={candidate.name} role={role} isInterviewer={isInterviewer} />}
