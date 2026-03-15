@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 import { generateInterviewQuestions, extractCVText } from "@/services/aiService";
@@ -113,14 +113,41 @@ const CandidateDetail = () => {
     };
   }, [id, queryClient]);
 
-  const myQuestions = allQuestions.filter((q) => q.interviewer_role === role && q.user_id === user?.id);
-  
-  // Debug: log current user and questions
+  const myQuestions = useMemo(() => {
+    if (!user?.id || !role) return [];
+    const filtered = allQuestions.filter((q) => q.interviewer_role === role && q.user_id === user.id);
+    console.log("🔑 My questions:", { userId: user.id, role, count: filtered.length, questions: filtered.map(q => ({ id: q.id, content: q.content.substring(0, 40) })) });
+    return filtered;
+  }, [allQuestions, user?.id, role]);
+
+  // Debug: Show question analysis on load
   useEffect(() => {
-    console.log("📍 Current user:", user?.id, "Role:", role);
-    console.log("📋 All questions:", allQuestions.map(q => ({ id: q.id, user_id: q.user_id, role: q.interviewer_role, content: q.content.substring(0, 30) })));
-    console.log("🔑 My questions:", myQuestions.length, myQuestions.map(q => ({ id: q.id, user_id: q.user_id })));
-  }, [user?.id, role, allQuestions, myQuestions]);
+    console.group("📊 Question Debug Info");
+    console.log("👤 Current User:", { id: user?.id, email: user?.email });
+    console.log("🎯 Current Role:", role);
+    console.log("📋 Total Questions:", allQuestions.length);
+    console.log("📋 All Questions Details:", allQuestions.map(q => ({
+      id: q.id,
+      role: q.interviewer_role,
+      user_id: q.user_id,
+      content: q.content.substring(0, 40),
+      created_at: q.created_at
+    })));
+    
+    const byRole = {
+      hr1: allQuestions.filter(q => q.interviewer_role === 'interviewer_1').length,
+      hr2: allQuestions.filter(q => q.interviewer_role === 'interviewer_2').length,
+      hr3: allQuestions.filter(q => q.interviewer_role === 'interviewer_3').length,
+    };
+    console.log("📊 Questions by Role:", byRole);
+    
+    if (user?.id && role) {
+      const myCount = allQuestions.filter(q => q.interviewer_role === role && q.user_id === user.id).length;
+      const roleTotal = allQuestions.filter(q => q.interviewer_role === role).length;
+      console.log(`✅ My ${role} questions:`, { mine: myCount, roleTotal });
+    }
+    console.groupEnd();
+  }, [user?.id, role, allQuestions]);
   
   const [newQuestionsText, setNewQuestionsText] = useState("");
 
@@ -332,7 +359,27 @@ const CandidateDetail = () => {
   }
 
   const QuestionBlock = ({ r, qs, canDelete = false, onDelete }: { r: string; qs: typeof allQuestions; canDelete?: boolean; onDelete?: (id: string) => void }) => {
-    if (qs.length === 0) return null;
+    if (qs.length === 0) {
+      // Show empty state for "My questions" section
+      if (canDelete) {
+        return (
+          <div className="rounded-2xl bg-card shadow-card border border-border/40 border-dashed overflow-hidden">
+            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border/40 bg-muted/20">
+              <div className={`w-2.5 h-2.5 rounded-full ${ROLE_DOT_COLORS[r] || "bg-foreground"}`} />
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                {ROLE_LABELS[r] || r}
+              </h3>
+              <span className="ml-auto text-[11px] text-muted-foreground/50 font-medium">Câu hỏi của bạn</span>
+            </div>
+            <div className="px-5 py-8 text-center">
+              <p className="text-sm text-muted-foreground">Bạn chưa thêm câu hỏi</p>
+              <p className="text-xs text-muted-foreground/50 mt-1">Dùng form trên để thêm câu hỏi</p>
+            </div>
+          </div>
+        );
+      }
+      return null;
+    }
     return (
       <div className="rounded-2xl bg-card shadow-card border border-border/40 overflow-hidden">
         <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border/40 bg-muted/20">
@@ -630,7 +677,16 @@ const CandidateDetail = () => {
             )}
 
             {/* My questions */}
-            {isInterviewer && <QuestionBlock r={role!} qs={myQuestions} canDelete={true} onDelete={(id) => deleteQuestionMutation.mutate(id)} />}
+            {isInterviewer && (
+              <>
+                <QuestionBlock r={role!} qs={myQuestions} canDelete={true} onDelete={(id) => deleteQuestionMutation.mutate(id)} />
+                {myQuestions.length > 0 && (
+                  <div className="text-xs text-muted-foreground/60 text-center mt-2">
+                    💡 Bạn có thể xóa các câu hỏi bạn tạo. Để xóa câu của HR khác, liên hệ họ.
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Evaluation Scoring Panel */}
             {isInterviewer && <EvaluationScoringPanel candidateId={id!} candidateName={candidate.name} role={role} isInterviewer={isInterviewer} />}
