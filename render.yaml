@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: interview
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: VITE_SUPABASE_URL
+        scope: build
+      - key: VITE_SUPABASE_ANON_KEY
+        scope: build
+      - key: VITE_GROQ_API_KEY_1
+        scope: build
+      - key: VITE_GROQ_API_KEY_2
+        scope: build
+    routes:
+      - path: "/"
+        destination: /index.html
+      - path: "/assets/*"
+        destination: /assets/:path
+    headers:
+      - path: "/assets/*.css"
+        name: "Content-Type"
+        value: "text/css; charset=utf-8"
+      - path: "/assets/*.js"
+        name: "Content-Type"
+        value: "application/javascript; charset=utf-8"
