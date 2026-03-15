@@ -114,6 +114,14 @@ const CandidateDetail = () => {
   }, [id, queryClient]);
 
   const myQuestions = allQuestions.filter((q) => q.interviewer_role === role && q.user_id === user?.id);
+  
+  // Debug: log current user and questions
+  useEffect(() => {
+    console.log("📍 Current user:", user?.id, "Role:", role);
+    console.log("📋 All questions:", allQuestions.map(q => ({ id: q.id, user_id: q.user_id, role: q.interviewer_role, content: q.content.substring(0, 30) })));
+    console.log("🔑 My questions:", myQuestions.length, myQuestions.map(q => ({ id: q.id, user_id: q.user_id })));
+  }, [user?.id, role, allQuestions, myQuestions]);
+  
   const [newQuestionsText, setNewQuestionsText] = useState("");
 
   const [uploading, setUploading] = useState(false);
