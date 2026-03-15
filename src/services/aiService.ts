@@ -1,11 +1,15 @@
 // Groq API keys with rotation support
-// Load from environment variables (defined in .env.local or Vite config)
+// Load from environment variables (defined in .env or .env.local)
 const GROQ_API_KEYS = [
   import.meta.env.VITE_GROQ_API_KEY_1 || "",
   import.meta.env.VITE_GROQ_API_KEY_2 || "",
 ].filter(key => key !== "");
 
 let currentKeyIndex = 0;
+
+const isApiKeyConfigured = () => {
+  return GROQ_API_KEYS.length > 0;
+};
 
 const getCurrentKey = () => {
   return GROQ_API_KEYS[currentKeyIndex];
@@ -74,6 +78,13 @@ export const generateInterviewQuestions = async (
   candidateRole: string,
   cvContent: string
 ): Promise<GeneratedQuestions> => {
+  // Validate API keys are configured
+  if (!isApiKeyConfigured()) {
+    throw new Error(
+      "Groq API keys not configured. Please add VITE_GROQ_API_KEY_1 and VITE_GROQ_API_KEY_2 to your .env file"
+    );
+  }
+
   const prompt = `You are an expert recruiter conducting interviews for the position of "${candidateRole}".
 
 CANDIDATE INFORMATION:
@@ -202,7 +213,6 @@ HR3_QUESTION_5: [question in Vietnamese using "bạn"]`;
     }
   }
 
-  throw new Error(
-    `Failed to generate questions after trying all API keys. Last error: ${lastError?.message}`
-  );
+  const errorMessage = lastError?.message || "Unknown error";
+  throw new Error(`Failed to generate questions after trying all API keys. Last error: ${errorMessage}`);
 };
