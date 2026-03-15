@@ -3,7 +3,7 @@ services:
     name: interview
     env: node
     buildCommand: npm install && npm run build
-    startCommand: npm run preview
+    startCommand: node server.js
     envVars:
       - key: VITE_SUPABASE_URL
         scope: build
@@ -13,15 +13,3 @@ services:
         scope: build
       - key: VITE_GROQ_API_KEY_2
         scope: build
-    routes:
-      - path: "/"
-        destination: /index.html
-      - path: "/assets/*"
-        destination: /assets/:path
-    headers:
-      - path: "/assets/*.css"
-        name: "Content-Type"
-        value: "text/css; charset=utf-8"
-      - path: "/assets/*.js"
-        name: "Content-Type"
-        value: "application/javascript; charset=utf-8"
