@@ -271,21 +271,35 @@ const CandidateDetail = () => {
 
   const deleteQuestionMutation = useMutation({
     mutationFn: async (questionId: string) => {
-      // Verify question exists
+      // Xác minh câu hỏi tồn tại
       const question = allQuestions.find(q => q.id === questionId);
       if (!question) throw new Error("Câu hỏi không tồn tại");
       
-      // Allow any interviewer to delete any question
+      console.log("🗑️ Đang xóa câu hỏi:", questionId);
+      
+      // Xóa câu hỏi từ cơ sở dữ liệu
       const { error } = await supabase.from("interview_questions").delete().eq("id", questionId);
-      if (error) throw error;
+      
+      if (error) {
+        console.error("❌ Lỗi xóa từ DB:", error);
+        throw error;
+      }
+      
+      console.log("✅ Xóa thành công từ DB");
       return questionId;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setDeleteConfirm(null);
-      queryClient.invalidateQueries({ queryKey: ["questions", id] });
+      
+      // Ngoài việc invalidate, còn refetch ngay để cập nhật UI
+      console.log("🔄 Đang làm mới dữ liệu...");
+      await queryClient.refetchQueries({ queryKey: ["questions", id] });
+      
+      console.log("✨ Dữ liệu đã cập nhật");
       toast.success("Đã xóa câu hỏi");
     },
     onError: (err: Error) => {
+      console.error("❌ Lỗi trong deleteQuestionMutation:", err);
       toast.error("Lỗi xóa: " + err.message);
     },
   });
